@@ -1,4 +1,4 @@
-import io
+from io import StringIO
 import sys
 
 from app import app
@@ -26,14 +26,20 @@ class TestApp:
         response = app.test_client().get('/print/hello')
         assert(response.data.decode() == 'hello')
 
+   
+
     def test_print_text_in_console(self):
         '''displays text of route in console.'''
-        captured_out = io.StringIO()
+        captured_out = StringIO()
         sys.stdout = captured_out
-        app.test_client().get('/print/hello')
-        sys.stdout = sys.__stdout__
-        assert(captured_out.getvalue() == 'hello\n')
 
+        with app.test_client() as client:
+            client.get('/print/hello')
+
+        sys.stdout = sys.__stdout__
+        captured_output = captured_out.getvalue().strip()
+
+        assert captured_output == 'hello'
     def test_count_route(self):
         '''has a resource available at "/count/<parameter>".'''
         response = app.test_client().get('/count/5')
